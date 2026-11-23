@@ -11,6 +11,7 @@ import json
 import os
 import re
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -242,12 +243,26 @@ def cmd_patch(args: argparse.Namespace) -> int:
     new_src = Path(args.source_file).read_text(encoding="utf-8")
     nb["cells"][idx]["source"] = new_src.splitlines(keepends=True)
 
-    # Atomic write via temp file in same directory to avoid corrupting the notebook on interruption.
-    tmp_path = nb_path.with_suffix(nb_path.suffix + ".tmp")
-    with tmp_path.open("w", encoding="utf-8") as fh:
-        json.dump(nb, fh, indent=1, ensure_ascii=False)
-        fh.write("\n")
-    os.replace(tmp_path, nb_path)
+    # Atomic write via an exclusive (0600) temp file in the same directory to avoid
+    # symlink races and prevent corrupting the notebook on interruption.
+    tmp_path: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=nb_path.parent,
+            prefix=f".{nb_path.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as fh:
+            tmp_path = Path(fh.name)
+            json.dump(nb, fh, indent=1, ensure_ascii=False)
+            fh.write("\n")
+        os.replace(tmp_path, nb_path)
+    except BaseException:
+        if tmp_path is not None:
+            tmp_path.unlink(missing_ok=True)
+        raise
     print(f"Patched cell {idx:02d} in {nb_path} from {args.source_file}")
     return 0
 
