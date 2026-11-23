@@ -1,0 +1,18 @@
+{
+  "name": "google-colab",
+  "displayName": "Google Colab",
+  "description": "Run and autonomously debug Google Colab notebooks headlessly via google-colab-cli (with optional Google Drive sync, smart timeouts, and zero permanent local files).",
+  "version": "1.2.0",
+  "logo": "assets/logo.svg",
+  "author": {
+    "name": "humman0id",
+    "url": "https://github.com/humman0id"
+  },
+  "homepage": "https://github.com/humman0id/antigravity-google-colab",
+  "repository": "https://github.com/humman0id/antigravity-google-colab",
+  "suggestedPrompts": [
+    "Run and debug my Colab notebook from Google Drive and fix any failing cells",
+    "Run a local notebook.ipynb on a Colab GPU runtime until all cells pass",
+    "Check my active Google Colab sessions and stop any idle GPU runtimes"
+  ]
+}
